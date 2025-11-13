@@ -17,6 +17,12 @@ public class StatementPrinter {
         this.plays = plays;
     }
 
+    /**
+     * Produces a formatted billing statement for the customer.
+     *
+     * @return a formatted multi-line statement summarizing all performances,
+     *         total charges, and earned volume credits
+     */
     public String statement() {
 
         int totalAmount = 0;
@@ -26,8 +32,6 @@ public class StatementPrinter {
                 new StringBuilder("Statement for " + invoice.getCustomer()
                         + System.lineSeparator());
 
-        final NumberFormat frmt = NumberFormat.getCurrencyInstance(Locale.US);
-
         for (Performance performance : invoice.getPerformances()) {
 
             volumeCredits += getVolumeCredits(performance);
@@ -35,14 +39,14 @@ public class StatementPrinter {
             result.append(
                     String.format("  %s: %s (%s seats)%n",
                             getPlay(performance).getName(),
-                            frmt.format(getAmount(performance) / Constants.PERCENT_FACTOR),
+                            usd(getAmount(performance)),
                             performance.getAudience()));
 
             totalAmount += getAmount(performance);
         }
 
         result.append(String.format("Amount owed is %s%n",
-                frmt.format(totalAmount / Constants.PERCENT_FACTOR)));
+                usd(totalAmount)));
         result.append(String.format("You earned %s credits%n",
                 volumeCredits));
 
@@ -102,5 +106,16 @@ public class StatementPrinter {
         }
 
         return result;
+    }
+
+    /**
+     * Converts an amount in cents into a formatted US currency string.
+     *
+     * @param amount the amount in cents
+     * @return a formatted USD currency string
+     */
+    private String usd(int amount) {
+        return NumberFormat.getCurrencyInstance(Locale.US)
+                .format(amount / Constants.PERCENT_FACTOR);
     }
 }
