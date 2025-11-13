@@ -17,12 +17,6 @@ public class StatementPrinter {
         this.plays = plays;
     }
 
-    /**
-     * Returns a formatted statement of the invoice associated with this printer.
-     *
-     * @return the formatted statement
-     * @throws RuntimeException if one of the play types is not known
-     */
     public String statement() {
 
         int totalAmount = 0;
@@ -34,23 +28,17 @@ public class StatementPrinter {
 
         final NumberFormat frmt = NumberFormat.getCurrencyInstance(Locale.US);
 
-        for (Performance p : invoice.getPerformances()) {
+        for (Performance performance : invoice.getPerformances()) {
 
-            volumeCredits += Math.max(
-                    p.getAudience() - Constants.BASE_VOLUME_CREDIT_THRESHOLD, 0);
-
-            if ("comedy".equals(getPlay(p).getType())) {
-                volumeCredits += p.getAudience()
-                        / Constants.COMEDY_EXTRA_VOLUME_FACTOR;
-            }
+            volumeCredits += getVolumeCredits(performance);
 
             result.append(
                     String.format("  %s: %s (%s seats)%n",
-                            getPlay(p).getName(),
-                            frmt.format(getAmount(p) / Constants.PERCENT_FACTOR),
-                            p.getAudience()));
+                            getPlay(performance).getName(),
+                            frmt.format(getAmount(performance) / Constants.PERCENT_FACTOR),
+                            performance.getAudience()));
 
-            totalAmount += getAmount(p);
+            totalAmount += getAmount(performance);
         }
 
         result.append(String.format("Amount owed is %s%n",
@@ -68,10 +56,10 @@ public class StatementPrinter {
     private int getAmount(Performance performance) {
 
         final Play play = getPlay(performance);
-
         int result = 0;
 
         switch (play.getType()) {
+
             case "tragedy":
                 result = Constants.TRAGEDY_BASE_AMOUNT;
                 if (performance.getAudience() > Constants.TRAGEDY_AUDIENCE_THRESHOLD) {
@@ -96,6 +84,21 @@ public class StatementPrinter {
             default:
                 throw new RuntimeException(
                         String.format("unknown type: %s", play.getType()));
+        }
+
+        return result;
+    }
+
+    private int getVolumeCredits(Performance performance) {
+
+        int result = 0;
+
+        result += Math.max(
+                performance.getAudience() - Constants.BASE_VOLUME_CREDIT_THRESHOLD, 0);
+
+        if ("comedy".equals(getPlay(performance).getType())) {
+            result += performance.getAudience()
+                    / Constants.COMEDY_EXTRA_VOLUME_FACTOR;
         }
 
         return result;
