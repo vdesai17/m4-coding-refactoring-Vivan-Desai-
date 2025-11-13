@@ -1,2 +1,3 @@
+8bea4f4 Task 1.2
 433d703 Task 1.1
 9ef57c4 Initial commit
